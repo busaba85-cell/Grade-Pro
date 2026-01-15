@@ -717,7 +717,7 @@
             };
 
             const executeAdminAction = () => {
-                if (confirmPasswordInput !== '65411597') {
+                if (confirmPasswordInput !== 'tbusaba666') {
                     alert('รหัสผ่านไม่ถูกต้อง');
                     return;
                 }
@@ -991,9 +991,9 @@
                         {view === 'teacher' && (
                             <div className="print-only">
                                 <div className="student-report-header print-header">
-                                    <h1>แบบบันทึกผลการเรียน รายวิชาชีววิทยา 2</h1>
+                                    <h1>แบบบันทึกผลการเรียน</h1>
                                     <p><strong>โรงเรียนพิษณุโลกพิทยาคม</strong></p>
-                                    <p>ภาคเรียนที่ 2 ปีการศึกษา 2568 ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
+                                    <p>ภาคเรียนที่__ ปีการศึกษา_________ ระดับชั้น {selectedRoom !== 'All' ? selectedRoom : '....................'}</p>
                                 </div>
                                 <div className="print-container">
                                     {[0, 1].map(colIndex => {
@@ -1025,8 +1025,7 @@
                                     })}
                                 </div>
                                 <div className="print-footer">
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์  เครือก๋า)</p><p>นักศึกษาฝึกวิชาชีพครู</p></div>
-                                    <div className="signature-block"><div className="signature-line"></div><p>(นางสาวพรวดี ใจเที่ยงธรรม)</p><p>ครู</p></div>
+                                    <div className="signature-block"><div className="signature-line"></div><p>(นางสาวบุษบา  เพ็งผ่อง)</p><p>ครูผู้สอน</p></div>
                                     <div className="signature-block"><div className="signature-line"></div><p>ผู้อำนวยการสถานศึกษา</p><p>(...........................................................)</p></div>
                                 </div>
                             </div>
@@ -1095,8 +1094,7 @@
                                         <div className="student-report-header">
                                             <div style={{marginBottom: '5px'}}><Icons.FileSpreadsheet size={32}/></div>
                                             <h1>รายงานผลการเรียนรายบุคคล</h1>
-                                            <h2>รายวิชาชีววิทยา 2</h2>
-                                            <h3>ภาคเรียนที่ 2 ปีการศึกษา 2568 | โรงเรียนพิษณุโลกพิทยาคม</h3>
+                                            <h3>ภาคเรียนที่___ ปีการศึกษา__________ | โรงเรียนพิษณุโลกพิทยาคม</h3>
                                         </div>
                                         <div className="student-info">
                                             <div><span><strong>ชื่อ-นามสกุล:</strong> {searchResult.name}</span><span><strong>รหัสประจำตัว:</strong> {searchResult.id}</span></div>
@@ -1126,7 +1124,7 @@
                                         </table>
                                         <div className="print-footer">
                                             <div className="signature-block"><div className="signature-line"></div><p>({searchResult.name})</p><p>นักเรียนผู้รับรอง</p></div>
-                                            <div className="signature-block"><div className="signature-line"></div><p>(นายนวรัตน์ เครือก๋า)</p><p>ครูผู้สอน</p></div>
+                                            <div className="signature-block"><div className="signature-line"></div><p>(นางสาวบุษบา  เพ็งพ่อง)</p><p>ครูผู้สอน</p></div>
                                         </div>
                                     </div>
                                 )}
@@ -1139,7 +1137,7 @@
                                 <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-4"><Icons.Lock className="w-8 h-8 text-primary-600"/></div>
                                 <h3 className="text-xl font-bold mb-6 font-display text-slate-800">สำหรับครูผู้สอน</h3>
                                 <input type="password" placeholder="รหัสผ่าน" className="w-full p-3 border rounded-xl mb-4 text-center focus:ring-2 focus:ring-primary-500 outline-none" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key==='Enter' && document.getElementById('login-btn').click()} />
-                                <button id="login-btn" onClick={() => { if(password==='65411597') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
+                                <button id="login-btn" onClick={() => { if(password==='tbusaba666') setView('teacher'); else setWarning({show:true, msg:'รหัสผ่านไม่ถูกต้อง'}); }} className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition transform active:scale-95">เข้าสู่ระบบ</button>
                             </div>
                         )}
 
@@ -1467,7 +1465,7 @@
                                 <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-xs text-center">
                                     <div className="w-14 h-14 bg-warning-100 rounded-full flex items-center justify-center mx-auto mb-4 text-warning-600"><Icons.Lock size={28}/></div>
                                     <h3 className="font-bold text-lg text-gray-800 mb-2">ยืนยันรหัสผ่าน</h3>
-                                    <p className="text-sm text-gray-500 mb-4">กรุณากรอกรหัสผ่าน 'admin' เพื่อดำเนินการต่อ</p>
+                                    <p className="text-sm text-gray-500 mb-4">กรุณากรอกรหัสผ่านเพื่อดำเนินการต่อ</p>
                                     <input 
                                         type="password" 
                                         className="w-full p-3 border-2 border-gray-200 rounded-xl text-center mb-4 focus:border-amber-500 focus:outline-none transition" 
