@@ -107,7 +107,9 @@
               appId: "1:578599330773:web:b934f11e632350842a135c",
               measurementId: "G-FMZ7F1WE65"
         };
-        const app = initializeApp(appFirebaseConfig);
+        // FIXED: Use envConfig if available, fallback to userConfig
+        const firebaseConfigObj = envConfig || userConfig;
+        const app = initializeApp(firebaseConfigObj);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'gradepro-v8-multi'; 
@@ -388,7 +390,7 @@
                     }
                 });
                 return unsubMaster;
-            }, [user, view]); // activeCourseId removed from dependency to avoid loop
+            }, [user, view]);
 
             // 3. Load Course Specific Data when activeCourseId changes
             useEffect(() => {
@@ -543,6 +545,7 @@
                 try { await setDoc(doc(db, 'artifacts', appId, 'public', 'data', `students_${activeCourseId}`, data.id), data, { merge: true }); showToast('บันทึกแล้ว', 'success'); }
                 catch (e) { showToast('Error', 'error'); }
             };
+            
             const deleteStudent = async (id) => {
                 setModal({ type: 'confirm', title: 'ยืนยันลบ', message: 'ลบข้อมูลนักเรียนนี้?', onConfirm: async () => {
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', `students_${activeCourseId}`, id)); setModal(null); showToast('ลบแล้ว', 'success');
@@ -645,7 +648,6 @@
             };
 
             const handleBackup = () => {
-                // Backup only current course
                 const data = JSON.stringify({ students, sections, config: courseConfig, courseInfo: activeCourseObj });
                 const blob = new Blob([data], { type: 'application/json' });
                 const link = document.createElement("a");
@@ -679,13 +681,20 @@
                     try {
                         const data = JSON.parse(event.target.result);
                         if (data.students && data.sections) {
-                            if (!confirm(`ข้อมูลของรายวิชาปัจจุบัน (${activeCourseObj.name}) จะถูกเขียนทับ ยืนยันการกู้คืน?`)) return;
-                            await saveCourseConfigData(data.sections, data.config?.grading || DEFAULT_GRADING, data.config?.drawnIds || [], data.config?.showGrade || false);
-                            const batch = writeBatch(db);
-                            data.students.forEach(s => { batch.set(doc(db, 'artifacts', appId, 'public', 'data', `students_${activeCourseId}`, s.id), s); });
-                            await batch.commit();
-                            showToast('กู้คืนข้อมูลสำเร็จ!', 'success');
-                            window.location.reload();
+                            setModal({
+                                type: 'confirm',
+                                title: 'ยืนยันการกู้คืน',
+                                message: `ข้อมูลของรายวิชาปัจจุบัน (${activeCourseObj.name}) จะถูกเขียนทับ ยืนยันการกู้คืน?`,
+                                onConfirm: async () => {
+                                    await saveCourseConfigData(data.sections, data.config?.grading || DEFAULT_GRADING, data.config?.drawnIds || [], data.config?.showGrade || false);
+                                    const batch = writeBatch(db);
+                                    data.students.forEach(s => { batch.set(doc(db, 'artifacts', appId, 'public', 'data', `students_${activeCourseId}`, s.id), s); });
+                                    await batch.commit();
+                                    showToast('กู้คืนข้อมูลสำเร็จ!', 'success');
+                                    setModal(null);
+                                    window.location.reload();
+                                }
+                            });
                         } else { showToast('ไฟล์ไม่ถูกต้อง', 'error'); }
                     } catch (err) { console.error(err); showToast('เกิดข้อผิดพลาดในการอ่านไฟล์', 'error'); }
                 };
@@ -701,6 +710,16 @@
                     setModal(null);
                     showToast('ล้างข้อมูลเรียบร้อย', 'success');
                 }});
+            };
+
+            const handleScan = (text) => {
+                if (view === 'student') {
+                    setStudentSearchInput(text);
+                    showToast('สแกนสำเร็จ กรุณากดปุ่ม "ค้นหา"', 'success');
+                } else {
+                    setSearchQuery(text);
+                    showToast(`สแกนรหัส: ${text}`, 'success');
+                }
             };
 
             // Score Entry
@@ -774,13 +793,19 @@
             };
             
             const restoreAllToWheel = () => {
-                if(confirm('ต้องการคืนค่าผู้ที่ถูกสุ่มไปแล้วของห้องนี้ กลับเข้าสู่วงล้อทั้งหมดหรือไม่?')) {
-                    const roomIds = randomHistory.map(s => s.id);
-                    const nextIds = courseConfig.drawnIds.filter(id => !roomIds.includes(id));
-                    setCourseConfig(prev => ({...prev, drawnIds: nextIds}));
-                    saveCourseConfigData(null, null, nextIds, null);
-                    setRandomWinner(null); setIsZooming(false);
-                }
+                setModal({
+                    type: 'confirm',
+                    title: 'ยืนยันการคืนค่า',
+                    message: 'ต้องการคืนค่าผู้ที่ถูกสุ่มไปแล้วของห้องนี้ กลับเข้าสู่วงล้อทั้งหมดหรือไม่?',
+                    onConfirm: () => {
+                        const roomIds = randomHistory.map(s => s.id);
+                        const nextIds = courseConfig.drawnIds.filter(id => !roomIds.includes(id));
+                        setCourseConfig(prev => ({...prev, drawnIds: nextIds}));
+                        saveCourseConfigData(null, null, nextIds, null);
+                        setRandomWinner(null); setIsZooming(false);
+                        setModal(null);
+                    }
+                });
             };
 
             const filteredStudents = useMemo(() => {
@@ -913,6 +938,7 @@
                     </nav>
 
                     <main className="w-full p-4 md:p-6 no-print max-w-7xl mx-auto">
+                        {}
                         {/* Student View */}
                         {view === 'student' && (
                             <div className="max-w-md mx-auto mt-10 animate-slide-up">
@@ -1099,6 +1125,7 @@
                             </div>
                         )}
 
+                        {}
                         {/* Teacher Login View */}
                         {view === 'teacher_login' && (
                             <div className="max-w-sm mx-auto mt-20 text-center animate-scale">
@@ -1112,6 +1139,7 @@
                             </div>
                         )}
 
+                        {}
                         {/* Teacher Dashboard View (Select Course) */}
                         {view === 'teacher_dashboard' && (
                             <div className="max-w-6xl mx-auto mt-8 animate-slide-up">
@@ -1165,6 +1193,7 @@
                             </div>
                         )}
 
+                        {}
                         {/* Teacher View */}
                         {view === 'teacher' && activeCourseId && (
                             <div className="animate-fade-in w-full">
@@ -1272,6 +1301,7 @@
                                     </div>
                                 )}
 
+                                {}
                                 {teacherTab === 'scores' && (
                                     <div className="bg-white rounded-2xl shadow-soft border border-slate-200 overflow-hidden relative">
                                         <VirtualNumpad isOpen={numpadOpen} onClose={() => setNumpadOpen(false)} onInput={(k) => {
@@ -1419,6 +1449,7 @@
                                     </div>
                                 )}
 
+                                {}
                                 {teacherTab === 'analysis' && (
                                     <div className="space-y-6">
                                         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-center max-w-4xl mx-auto gap-4">
@@ -1706,6 +1737,7 @@
                         )}
                     </main>
 
+                    {}
                     {/* MODALS */}
                     <div className="no-print">
                         {scannerOpen && <Scanner onScan={(txt) => { setScannerOpen(false); handleScan(txt); }} onClose={() => setScannerOpen(false)} />}
@@ -1765,6 +1797,7 @@
                         <Modal isOpen={modal?.type === 'import'} title="นำเข้าข้อมูลรายวิชานี้ (Excel Copy)" onClose={() => setModal(null)} footer={<button onClick={handleImport} disabled={isImporting} className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold">{isImporting ? 'กำลังประมวลผล...' : 'เริ่มนำเข้า'}</button>}> <div className="bg-yellow-50 text-yellow-700 text-xs p-3 rounded-lg mb-3 border border-yellow-100">รูปแบบ: <strong>รหัส [tab] ชื่อ [tab] ห้อง [tab] เลขที่</strong><br/>ข้อมูลจะถูกนำเข้าสู่รายวิชา: <strong>{activeCourseObj.name}</strong></div><textarea className="w-full h-40 p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs focus:ring-2 focus:ring-primary-500 outline-none" placeholder="66001  สมชาย  1/1  1..." value={importText} onChange={e => setImportText(e.target.value)}></textarea></Modal>
                     </div>
 
+                    {}
                     {/* PRINT LAYOUT */}
                     <div className="print-only">
                         {studentViewData && activeCourseObj && (
