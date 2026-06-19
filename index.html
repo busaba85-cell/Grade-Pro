@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GradePro Cloud v9.0 </title>
+    <link rel="icon" href="data:,">
     
     <!-- Google Fonts: เปลี่ยนไปใช้ Kanit และ Noto Sans Thai -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,10 +100,12 @@
     <div id="root"></div>
 
     <script type="text/babel" data-type="module">
+        /** @jsx React.createElement */
+        /** @jsxFrag React.Fragment */
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, onSnapshot, writeBatch, deleteDoc, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
+        
         // --- CONFIG ---
         const envConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const userConfig = {
